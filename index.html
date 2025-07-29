@@ -530,10 +530,54 @@
             }, 3000);
         }
         
-        // 实时监听物品数据
+        // 创建商品卡片
+        function createItemCard(item, id) {
+            const itemCard = document.createElement('div');
+            itemCard.className = 'item-card';
+            itemCard.innerHTML = `
+                <div class="item-image">
+                    ${item.imageUrl ? 
+                        `<img src="${item.imageUrl}" alt="${item.itemName}">` : 
+                        `<div>🎮</div>`
+                    }
+                </div>
+                <div class="item-details">
+                    <div class="item-game">${item.gameName}</div>
+                    <h3 class="item-name">${item.itemName}</h3>
+                    <div class="item-price">¥${item.price.toFixed(2)}</div>
+                    <div class="item-seller">
+                        <div class="seller-avatar">${item.sellerName.charAt(0)}</div>
+                        <span>${item.sellerName}</span>
+                    </div>
+                </div>
+            `;
+            return itemCard;
+        }
+        
+        // 实时监听物品数据 - 修复版本
         db.collection('items').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
-            itemsContainer.innerHTML = '';
+            // 移除"暂无交易物品"提示
+            if (itemsContainer.querySelector('.empty-state')) {
+                itemsContainer.innerHTML = '';
+            }
+            
+            // 更新商品数量
             itemCount.textContent = snapshot.size;
+            
+            // 处理文档变化
+            snapshot.docChanges().forEach(change => {
+                if (change.type === 'added') {
+                    // 添加新商品到列表顶部
+                    const item = change.doc.data();
+                    const itemCard = createItemCard(item, change.doc.id);
+                    itemsContainer.prepend(itemCard);
+                }
+            });
+        });
+        
+        // 初始加载商品
+        async function loadInitialItems() {
+            const snapshot = await db.collection('items').orderBy('timestamp', 'desc').limit(10).get();
             
             if (snapshot.empty) {
                 itemsContainer.innerHTML = `
@@ -543,41 +587,27 @@
                         <p>发布第一个交易物品吧！</p>
                     </div>
                 `;
+                itemCount.textContent = '0';
                 return;
             }
             
+            itemsContainer.innerHTML = '';
             snapshot.forEach(doc => {
                 const item = doc.data();
-                const itemId = doc.id;
-                
-                const itemCard = document.createElement('div');
-                itemCard.className = 'item-card';
-                itemCard.innerHTML = `
-                    <div class="item-image">
-                        ${item.imageUrl ? 
-                            `<img src="${item.imageUrl}" alt="${item.itemName}">` : 
-                            `<div>🎮</div>`
-                        }
-                    </div>
-                    <div class="item-details">
-                        <div class="item-game">${item.gameName}</div>
-                        <h3 class="item-name">${item.itemName}</h3>
-                        <div class="item-price">¥${item.price.toFixed(2)}</div>
-                        <div class="item-seller">
-                            <div class="seller-avatar">${item.sellerName.charAt(0)}</div>
-                            <span>${item.sellerName}</span>
-                        </div>
-                    </div>
-                `;
-                
+                const itemCard = createItemCard(item, doc.id);
                 itemsContainer.appendChild(itemCard);
             });
-        });
+            itemCount.textContent = snapshot.size;
+        }
+        
+        // 加载初始商品
+        loadInitialItems();
         
         // 搜索功能
         searchInput.addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
             const items = document.querySelectorAll('.item-card');
+            let visibleCount = 0;
             
             items.forEach(item => {
                 const name = item.querySelector('.item-name').textContent.toLowerCase();
@@ -585,10 +615,22 @@
                 
                 if (name.includes(searchTerm) || game.includes(searchTerm)) {
                     item.style.display = 'block';
+                    visibleCount++;
                 } else {
                     item.style.display = 'none';
                 }
             });
+            
+            // 如果没有匹配项，显示空状态
+            if (visibleCount === 0 && items.length > 0) {
+                itemsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div>🔍</div>
+                        <h3>未找到匹配物品</h3>
+                        <p>请尝试其他搜索词</p>
+                    </div>
+                `;
+            }
         });
         
         // 模拟在线人数
