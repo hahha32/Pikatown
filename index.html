@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GameTrade - 游戏道具交易平台</title>
+    <title>响妹设计 - 皮卡堂道具交易</title>
     <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-storage-compat.js"></script>
     <style>
         :root {
-            --primary: #4e54c8;
-            --secondary: #8f94fb;
-            --dark: #1a1a2e;
+            --primary: #ff6b6b;
+            --secondary: #ffb142;
+            --dark: #2d3436;
             --light: #f8f9fa;
-            --success: #28a745;
-            --danger: #dc3545;
-            --warning: #ffc107;
+            --success: #1dd1a1;
+            --danger: #ff6b6b;
+            --warning: #feca57;
         }
         
         * {
@@ -26,7 +26,7 @@
         }
         
         body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: linear-gradient(135deg, #f7f1e3 0%, #e7b9ff 100%);
             min-height: 100vh;
             padding: 20px;
             color: var(--dark);
@@ -40,9 +40,9 @@
         header {
             background: linear-gradient(to right, var(--primary), var(--secondary));
             color: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 30px;
+            padding: 15px 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: space-between;
@@ -56,16 +56,16 @@
         }
         
         .logo h1 {
-            font-size: 2.2rem;
+            font-size: 2.0rem;
             font-weight: 700;
         }
         
         .logo-icon {
-            font-size: 2.5rem;
+            font-size: 2.2rem;
             background: white;
             color: var(--primary);
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -73,60 +73,68 @@
         }
         
         .tagline {
-            font-size: 1.1rem;
+            font-size: 1.0rem;
             opacity: 0.9;
-            margin-top: 5px;
+            margin-top: 3px;
         }
         
         .main-content {
             display: grid;
             grid-template-columns: 1fr 2fr;
-            gap: 25px;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
         }
         
         .form-section {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 15px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(5px);
         }
         
         .form-section h2 {
             color: var(--primary);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             padding-bottom: 10px;
             border-bottom: 2px solid var(--secondary);
+            text-align: center;
         }
         
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
         .form-group label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-weight: 600;
             color: var(--dark);
         }
         
         .form-control {
             width: 100%;
-            padding: 12px 15px;
+            padding: 10px 12px;
             border: 2px solid #e1e5eb;
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             transition: all 0.3s ease;
         }
         
         .form-control:focus {
             border-color: var(--primary);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(78, 84, 200, 0.2);
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2);
         }
         
         .btn {
             display: inline-block;
-            padding: 12px 25px;
+            padding: 10px 20px;
             background: linear-gradient(to right, var(--primary), var(--secondary));
             color: white;
             border: none;
@@ -140,7 +148,7 @@
         
         .btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 4px 15px rgba(78, 84, 200, 0.4);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
         }
         
         .btn-block {
@@ -148,37 +156,36 @@
             width: 100%;
         }
         
-        .btn-success {
-            background: linear-gradient(to right, var(--success), #3ddc91);
-        }
-        
         .items-section {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 15px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(5px);
         }
         
         .items-section h2 {
             color: var(--primary);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             padding-bottom: 10px;
             border-bottom: 2px solid var(--secondary);
+            text-align: center;
         }
         
         .items-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
         }
         
         .item-card {
             background: white;
-            border-radius: 10px;
+            border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
             transition: all 0.3s ease;
             border: 1px solid #eaeaea;
+            position: relative;
         }
         
         .item-card:hover {
@@ -188,7 +195,7 @@
         
         .item-image {
             width: 100%;
-            height: 200px;
+            height: 180px;
             background: linear-gradient(45deg, #f5f7fa, #e4e7f4);
             display: flex;
             align-items: center;
@@ -204,40 +211,34 @@
         }
         
         .item-details {
-            padding: 20px;
-        }
-        
-        .item-game {
-            font-size: 0.9rem;
-            color: #6c757d;
-            margin-bottom: 5px;
+            padding: 15px;
         }
         
         .item-name {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: 700;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             color: var(--dark);
         }
         
         .item-price {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             font-weight: 700;
             color: var(--success);
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         
         .item-seller {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             color: #6c757d;
             font-size: 0.9rem;
         }
         
         .seller-avatar {
-            width: 30px;
-            height: 30px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             background: var(--secondary);
             display: flex;
@@ -249,19 +250,20 @@
         
         .empty-state {
             text-align: center;
-            padding: 40px 20px;
+            padding: 30px 15px;
             color: #6c757d;
+            grid-column: 1 / -1;
         }
         
         .empty-state i {
-            font-size: 4rem;
-            margin-bottom: 20px;
+            font-size: 3.5rem;
+            margin-bottom: 15px;
             color: #dee2e6;
         }
         
         .empty-state h3 {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
+            font-size: 1.4rem;
+            margin-bottom: 8px;
             color: var(--dark);
         }
         
@@ -283,7 +285,7 @@
         
         .file-upload-label {
             display: block;
-            padding: 12px 15px;
+            padding: 10px 12px;
             background: #f8f9fa;
             border: 2px dashed #dee2e6;
             border-radius: 8px;
@@ -300,7 +302,7 @@
         
         .preview-image {
             max-width: 100%;
-            max-height: 200px;
+            max-height: 180px;
             margin-top: 10px;
             display: none;
             border-radius: 5px;
@@ -310,7 +312,7 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            padding: 15px 25px;
+            padding: 12px 20px;
             background: var(--success);
             color: white;
             border-radius: 8px;
@@ -326,22 +328,32 @@
         
         footer {
             text-align: center;
-            margin-top: 40px;
-            padding: 20px;
+            margin-top: 30px;
+            padding: 15px;
             color: #6c757d;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
         
-        @media (max-width: 900px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-            
-            header {
-                flex-direction: column;
-                text-align: center;
-                gap: 15px;
-            }
+        .game-tag {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: var(--primary);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .search-container {
+            display: flex;
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+        
+        .search-container input {
+            flex: 1;
         }
     </style>
 </head>
@@ -351,32 +363,23 @@
             <div class="logo">
                 <div class="logo-icon">🎮</div>
                 <div>
-                    <h1>GameTrade</h1>
-                    <p class="tagline">玩家自由交易平台 - 诚信交易，快乐游戏</p>
+                    <h1>响妹设计</h1>
+                    <p class="tagline">皮卡堂道具交易平台 - 诚信交易，快乐游戏</p>
                 </div>
-            </div>
-            <div class="stats">
-                <div>当前在线: <span id="onlineCount">0</span> 人</div>
-                <div>交易物品: <span id="itemCount">0</span> 件</div>
             </div>
         </header>
         
         <div class="main-content">
             <section class="form-section">
-                <h2>发布交易物品</h2>
+                <h2>发布道具</h2>
                 <form id="itemForm">
                     <div class="form-group">
-                        <label for="gameName">游戏名称</label>
-                        <input type="text" id="gameName" class="form-control" placeholder="例如：原神、英雄联盟" required>
-                    </div>
-                    
-                    <div class="form-group">
                         <label for="itemName">道具名称</label>
-                        <input type="text" id="itemName" class="form-control" placeholder="例如：风鹰剑、传说皮肤" required>
+                        <input type="text" id="itemName" class="form-control" placeholder="例如：粉色公主裙、黄金王座" required>
                     </div>
                     
                     <div class="form-group">
-                        <label for="sellerName">你的游戏ID</label>
+                        <label for="sellerName">你的皮卡堂ID</label>
                         <input type="text" id="sellerName" class="form-control" placeholder="游戏中的昵称" required>
                     </div>
                     
@@ -403,11 +406,9 @@
             </section>
             
             <section class="items-section">
-                <div class="section-header">
-                    <h2>交易市场</h2>
-                    <div class="filters">
-                        <input type="text" id="searchInput" class="form-control" placeholder="搜索道具...">
-                    </div>
+                <h2>交易市场</h2>
+                <div class="search-container">
+                    <input type="text" id="searchInput" class="form-control" placeholder="搜索道具...">
                 </div>
                 
                 <div class="items-grid" id="itemsContainer">
@@ -421,11 +422,11 @@
         </div>
         
         <div class="notification" id="notification">
-            交易信息已发布成功！
+            道具信息发布成功！
         </div>
         
         <footer>
-            <p>GameTrade 玩家交易平台 &copy; 2023 | 诚信交易，快乐游戏</p>
+            <p>响妹设计 &copy; 2023 | 诚信交易，快乐游戏</p>
             <p>本平台依靠玩家自觉，交易时请注意安全</p>
         </footer>
     </div>
@@ -450,8 +451,6 @@
         const itemForm = document.getElementById('itemForm');
         const itemsContainer = document.getElementById('itemsContainer');
         const notification = document.getElementById('notification');
-        const itemCount = document.getElementById('itemCount');
-        const onlineCount = document.getElementById('onlineCount');
         const imagePreview = document.getElementById('imagePreview');
         const itemImage = document.getElementById('itemImage');
         const searchInput = document.getElementById('searchInput');
@@ -473,7 +472,6 @@
         itemForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const gameName = document.getElementById('gameName').value;
             const itemName = document.getElementById('itemName').value;
             const sellerName = document.getElementById('sellerName').value;
             const price = parseFloat(document.getElementById('price').value);
@@ -496,7 +494,7 @@
                 
                 // 添加数据到Firestore
                 await db.collection('items').add({
-                    gameName,
+                    gameName: "皮卡堂", // 固定为皮卡堂
                     itemName,
                     sellerName,
                     price,
@@ -505,7 +503,7 @@
                 });
                 
                 // 显示通知
-                showNotification('交易信息发布成功！');
+                showNotification('道具信息发布成功！');
                 
                 // 重置表单
                 itemForm.reset();
@@ -535,6 +533,7 @@
             const itemCard = document.createElement('div');
             itemCard.className = 'item-card';
             itemCard.innerHTML = `
+                <div class="game-tag">皮卡堂</div>
                 <div class="item-image">
                     ${item.imageUrl ? 
                         `<img src="${item.imageUrl}" alt="${item.itemName}">` : 
@@ -542,7 +541,6 @@
                     }
                 </div>
                 <div class="item-details">
-                    <div class="item-game">${item.gameName}</div>
                     <h3 class="item-name">${item.itemName}</h3>
                     <div class="item-price">¥${item.price.toFixed(2)}</div>
                     <div class="item-seller">
@@ -555,29 +553,11 @@
         }
         
         // 实时监听物品数据 - 修复版本
-        db.collection('items').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
-            // 移除"暂无交易物品"提示
-            if (itemsContainer.querySelector('.empty-state')) {
-                itemsContainer.innerHTML = '';
-            }
-            
-            // 更新商品数量
-            itemCount.textContent = snapshot.size;
-            
-            // 处理文档变化
-            snapshot.docChanges().forEach(change => {
-                if (change.type === 'added') {
-                    // 添加新商品到列表顶部
-                    const item = change.doc.data();
-                    const itemCard = createItemCard(item, change.doc.id);
-                    itemsContainer.prepend(itemCard);
-                }
-            });
-        });
-        
-        // 初始加载商品
-        async function loadInitialItems() {
-            const snapshot = await db.collection('items').orderBy('timestamp', 'desc').limit(10).get();
+        db.collection('items')
+          .orderBy('timestamp', 'desc')
+          .onSnapshot(snapshot => {
+            // 清空容器
+            itemsContainer.innerHTML = '';
             
             if (snapshot.empty) {
                 itemsContainer.innerHTML = `
@@ -587,21 +567,25 @@
                         <p>发布第一个交易物品吧！</p>
                     </div>
                 `;
-                itemCount.textContent = '0';
                 return;
             }
             
-            itemsContainer.innerHTML = '';
+            // 添加所有商品
             snapshot.forEach(doc => {
                 const item = doc.data();
                 const itemCard = createItemCard(item, doc.id);
                 itemsContainer.appendChild(itemCard);
             });
-            itemCount.textContent = snapshot.size;
-        }
-        
-        // 加载初始商品
-        loadInitialItems();
+        }, error => {
+            console.error("监听失败: ", error);
+            itemsContainer.innerHTML = `
+                <div class="empty-state">
+                    <div>⚠️</div>
+                    <h3>数据加载失败</h3>
+                    <p>请刷新页面重试</p>
+                </div>
+            `;
+        });
         
         // 搜索功能
         searchInput.addEventListener('input', function() {
@@ -611,9 +595,8 @@
             
             items.forEach(item => {
                 const name = item.querySelector('.item-name').textContent.toLowerCase();
-                const game = item.querySelector('.item-game').textContent.toLowerCase();
                 
-                if (name.includes(searchTerm) || game.includes(searchTerm)) {
+                if (name.includes(searchTerm)) {
                     item.style.display = 'block';
                     visibleCount++;
                 } else {
@@ -630,13 +613,16 @@
                         <p>请尝试其他搜索词</p>
                     </div>
                 `;
+            } else if (visibleCount === 0) {
+                itemsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div>📦</div>
+                        <h3>暂无交易物品</h3>
+                        <p>发布第一个交易物品吧！</p>
+                    </div>
+                `;
             }
         });
-        
-        // 模拟在线人数
-        setInterval(() => {
-            onlineCount.textContent = Math.floor(Math.random() * 50 + 20);
-        }, 5000);
     </script>
 </body>
 </html>
