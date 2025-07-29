@@ -1,49 +1,109 @@
- <!DOCTYPE html>
-   <html>
-   <head>
-     <title>Button Click Counter</title>
-     <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app-compat.js"></script>
-     <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-firestore-compat.js"></script>
-   </head>
-   <body>
-     <button id="myButton">Click Me!</button>
-     <p>Total Clicks: <span id="clickCount">0</span></p>
-     <script>
-       // Your web app's Firebase configuration
-       const firebaseConfig = {
-         apiKey: "AIzaSyD73YL1GAFdhqhehJvf47z0Qx7jzZr6Ve8",
-         authDomain: "pikatown.firebaseapp.com",
-         projectId: "pikatown",
-         storageBucket: "pikatown.firebasestorage.app",
-         messagingSenderId: "381043931469",
-         appId: "1:381043931469:web:7193c29723c600701edf04"
-       };
-       // Initialize Firebase
-       firebase.initializeApp(firebaseConfig);
-       const db = firebase.firestore();
-       // Reference to the document
-       const clickDoc = db.collection("buttonClicks").doc("clickCounter");
-       // Get the current count and display it
-       clickDoc.get().then((doc) => {
-         if (doc.exists) {
-           document.getElementById("clickCount").textContent = doc.data().count;
-         } else {
-           // If the document doesn't exist, create it with count 0
-           clickDoc.set({ count: 0 });
-         }
-       });
-       // Button click event
-       document.getElementById("myButton").addEventListener("click", () => {
-         // We'll use a transaction to avoid concurrency issues
-         clickDoc.get().then(doc => {
-           let currentCount = doc.exists ? doc.data().count : 0;
-           currentCount++;
-           clickDoc.update({ count: currentCount })
-             .then(() => {
-               document.getElementById("clickCount").textContent = currentCount;
-             });
-         });
-       });
-     </script>
-   </body>
-   </html>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Real-time Data Sync</title>
+  <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-firestore-compat.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; }
+    .container { border: 1px solid #ddd; padding: 20px; border-radius: 8px; }
+    input, button { padding: 10px; margin: 5px; font-size: 16px; }
+    #numberDisplay { font-size: 24px; font-weight: bold; margin: 15px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Real-time Number Sync</h1>
+    
+    <!-- Number Input Section -->
+    <div>
+      <input type="number" id="numberInput" placeholder="Enter a number">
+      <button id="submitNumber">Submit Number</button>
+    </div>
+    <p>Latest Number: <span id="numberDisplay">0</span></p>
+    
+    <!-- Button Click Counter (existing feature) -->
+    <hr>
+    <button id="myButton">Click Me!</button>
+    <p>Total Clicks: <span id="clickCount">0</span></p>
+  </div>
+
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyD73YL1GAFdhqhehJvf47z0Qx7jzZr6Ve8",
+      authDomain: "pikatown.firebaseapp.com",
+      projectId: "pikatown",
+      storageBucket: "pikatown.firebasestorage.app",
+      messagingSenderId: "381043931469",
+      appId: "1:381043931469:web:7193c29723c600701edf04"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // References to Firestore documents
+    const clickDoc = db.collection("buttonClicks").doc("clickCounter");
+    const numberDoc = db.collection("sharedData").doc("latestNumber");
+
+    // ===== NUMBER SYNC FUNCTIONALITY =====
+    // Real-time listener for number updates
+    numberDoc.onSnapshot((doc) => {
+      if (doc.exists) {
+        const num = doc.data().value;
+        document.getElementById("numberDisplay").textContent = num;
+        console.log("Number updated in real-time:", num);
+      } else {
+        // Initialize if document doesn't exist
+        numberDoc.set({ value: 0 });
+      }
+    });
+
+    // Submit number handler
+    document.getElementById("submitNumber").addEventListener("click", () => {
+      const input = document.getElementById("numberInput");
+      const newValue = parseFloat(input.value);
+      
+      if (!isNaN(newValue)) {
+        numberDoc.set({ value: newValue })
+          .then(() => {
+            console.log("Number saved:", newValue);
+            input.value = ""; // Clear input
+          })
+          .catch(error => {
+            console.error("Error saving number:", error);
+          });
+      } else {
+        alert("Please enter a valid number");
+      }
+    });
+
+    // ===== BUTTON CLICK COUNTER =====
+    // Real-time listener for click counter
+    clickDoc.onSnapshot((doc) => {
+      if (doc.exists) {
+        document.getElementById("clickCount").textContent = doc.data().count;
+      } else {
+        clickDoc.set({ count: 0 });
+      }
+    });
+
+    // Click handler with atomic increment
+    document.getElementById("myButton").addEventListener("click", () => {
+      clickDoc.update({
+        count: firebase.firestore.FieldValue.increment(1)
+      }).catch(error => {
+        // Create document if it doesn't exist
+        if (error.code === 'not-found') {
+          clickDoc.set({ count: 1 });
+        }
+      });
+    });
+
+    // Initialize both features
+    clickDoc.get(); // Initialize click counter
+    numberDoc.get(); // Initialize number display
+  </script>
+</body>
+</html>
