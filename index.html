@@ -1,109 +1,600 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-  <title>Real-time Data Sync</title>
-  <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-firestore-compat.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; }
-    .container { border: 1px solid #ddd; padding: 20px; border-radius: 8px; }
-    input, button { padding: 10px; margin: 5px; font-size: 16px; }
-    #numberDisplay { font-size: 24px; font-weight: bold; margin: 15px 0; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameTrade - 游戏道具交易平台</title>
+    <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-storage-compat.js"></script>
+    <style>
+        :root {
+            --primary: #4e54c8;
+            --secondary: #8f94fb;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--dark);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+        
+        .logo-icon {
+            font-size: 2.5rem;
+            background: white;
+            color: var(--primary);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .tagline {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 25px;
+        }
+        
+        .form-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+        
+        .form-section h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--secondary);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(78, 84, 200, 0.2);
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(78, 84, 200, 0.4);
+        }
+        
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+        
+        .btn-success {
+            background: linear-gradient(to right, var(--success), #3ddc91);
+        }
+        
+        .items-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+        
+        .items-section h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--secondary);
+        }
+        
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .item-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 1px solid #eaeaea;
+        }
+        
+        .item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+        
+        .item-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(45deg, #f5f7fa, #e4e7f4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 3rem;
+        }
+        
+        .item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .item-details {
+            padding: 20px;
+        }
+        
+        .item-game {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+        
+        .item-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+        
+        .item-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--success);
+            margin-bottom: 15px;
+        }
+        
+        .item-seller {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .seller-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #dee2e6;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+        
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        .file-upload input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .file-upload-label {
+            display: block;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            text-align: center;
+            color: #6c757d;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .file-upload-label:hover {
+            border-color: var(--primary);
+            background: #eef2ff;
+        }
+        
+        .preview-image {
+            max-width: 100%;
+            max-height: 200px;
+            margin-top: 10px;
+            display: none;
+            border-radius: 5px;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: var(--success);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Real-time Number Sync</h1>
-    
-    <!-- Number Input Section -->
-    <div>
-      <input type="number" id="numberInput" placeholder="Enter a number">
-      <button id="submitNumber">Submit Number</button>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">🎮</div>
+                <div>
+                    <h1>GameTrade</h1>
+                    <p class="tagline">玩家自由交易平台 - 诚信交易，快乐游戏</p>
+                </div>
+            </div>
+            <div class="stats">
+                <div>当前在线: <span id="onlineCount">0</span> 人</div>
+                <div>交易物品: <span id="itemCount">0</span> 件</div>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <section class="form-section">
+                <h2>发布交易物品</h2>
+                <form id="itemForm">
+                    <div class="form-group">
+                        <label for="gameName">游戏名称</label>
+                        <input type="text" id="gameName" class="form-control" placeholder="例如：原神、英雄联盟" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="itemName">道具名称</label>
+                        <input type="text" id="itemName" class="form-control" placeholder="例如：风鹰剑、传说皮肤" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="sellerName">你的游戏ID</label>
+                        <input type="text" id="sellerName" class="form-control" placeholder="游戏中的昵称" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="price">价格 (元)</label>
+                        <input type="number" id="price" class="form-control" placeholder="0.00" min="0" step="0.01" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>道具图片 (可选)</label>
+                        <div class="file-upload">
+                            <div class="file-upload-label" id="fileLabel">
+                                <i class="upload-icon">📷</i>
+                                <p>点击上传图片</p>
+                                <p class="small">支持 JPG, PNG 格式</p>
+                            </div>
+                            <input type="file" id="itemImage" accept="image/*">
+                        </div>
+                        <img id="imagePreview" class="preview-image" alt="图片预览">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-block">发布交易信息</button>
+                </form>
+            </section>
+            
+            <section class="items-section">
+                <div class="section-header">
+                    <h2>交易市场</h2>
+                    <div class="filters">
+                        <input type="text" id="searchInput" class="form-control" placeholder="搜索道具...">
+                    </div>
+                </div>
+                
+                <div class="items-grid" id="itemsContainer">
+                    <div class="empty-state">
+                        <div>📦</div>
+                        <h3>暂无交易物品</h3>
+                        <p>发布第一个交易物品吧！</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <div class="notification" id="notification">
+            交易信息已发布成功！
+        </div>
+        
+        <footer>
+            <p>GameTrade 玩家交易平台 &copy; 2023 | 诚信交易，快乐游戏</p>
+            <p>本平台依靠玩家自觉，交易时请注意安全</p>
+        </footer>
     </div>
-    <p>Latest Number: <span id="numberDisplay">0</span></p>
     
-    <!-- Button Click Counter (existing feature) -->
-    <hr>
-    <button id="myButton">Click Me!</button>
-    <p>Total Clicks: <span id="clickCount">0</span></p>
-  </div>
-
-  <script>
-    // Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyD73YL1GAFdhqhehJvf47z0Qx7jzZr6Ve8",
-      authDomain: "pikatown.firebaseapp.com",
-      projectId: "pikatown",
-      storageBucket: "pikatown.firebasestorage.app",
-      messagingSenderId: "381043931469",
-      appId: "1:381043931469:web:7193c29723c600701edf04"
-    };
-
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    // References to Firestore documents
-    const clickDoc = db.collection("buttonClicks").doc("clickCounter");
-    const numberDoc = db.collection("sharedData").doc("latestNumber");
-
-    // ===== NUMBER SYNC FUNCTIONALITY =====
-    // Real-time listener for number updates
-    numberDoc.onSnapshot((doc) => {
-      if (doc.exists) {
-        const num = doc.data().value;
-        document.getElementById("numberDisplay").textContent = num;
-        console.log("Number updated in real-time:", num);
-      } else {
-        // Initialize if document doesn't exist
-        numberDoc.set({ value: 0 });
-      }
-    });
-
-    // Submit number handler
-    document.getElementById("submitNumber").addEventListener("click", () => {
-      const input = document.getElementById("numberInput");
-      const newValue = parseFloat(input.value);
-      
-      if (!isNaN(newValue)) {
-        numberDoc.set({ value: newValue })
-          .then(() => {
-            console.log("Number saved:", newValue);
-            input.value = ""; // Clear input
-          })
-          .catch(error => {
-            console.error("Error saving number:", error);
-          });
-      } else {
-        alert("Please enter a valid number");
-      }
-    });
-
-    // ===== BUTTON CLICK COUNTER =====
-    // Real-time listener for click counter
-    clickDoc.onSnapshot((doc) => {
-      if (doc.exists) {
-        document.getElementById("clickCount").textContent = doc.data().count;
-      } else {
-        clickDoc.set({ count: 0 });
-      }
-    });
-
-    // Click handler with atomic increment
-    document.getElementById("myButton").addEventListener("click", () => {
-      clickDoc.update({
-        count: firebase.firestore.FieldValue.increment(1)
-      }).catch(error => {
-        // Create document if it doesn't exist
-        if (error.code === 'not-found') {
-          clickDoc.set({ count: 1 });
+    <script>
+        // Firebase配置
+        const firebaseConfig = {
+            apiKey: "AIzaSyD73YL1GAFdhqhehJvf47z0Qx7jzZr6Ve8",
+            authDomain: "pikatown.firebaseapp.com",
+            projectId: "pikatown",
+            storageBucket: "pikatown.appspot.com",
+            messagingSenderId: "381043931469",
+            appId: "1:381043931469:web:7193c29723c600701edf04"
+        };
+        
+        // 初始化Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+        
+        // 获取DOM元素
+        const itemForm = document.getElementById('itemForm');
+        const itemsContainer = document.getElementById('itemsContainer');
+        const notification = document.getElementById('notification');
+        const itemCount = document.getElementById('itemCount');
+        const onlineCount = document.getElementById('onlineCount');
+        const imagePreview = document.getElementById('imagePreview');
+        const itemImage = document.getElementById('itemImage');
+        const searchInput = document.getElementById('searchInput');
+        
+        // 图片预览
+        itemImage.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    imagePreview.src = event.target.result;
+                    imagePreview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // 提交表单
+        itemForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const gameName = document.getElementById('gameName').value;
+            const itemName = document.getElementById('itemName').value;
+            const sellerName = document.getElementById('sellerName').value;
+            const price = parseFloat(document.getElementById('price').value);
+            const imageFile = itemImage.files[0];
+            
+            // 显示加载状态
+            const submitBtn = itemForm.querySelector('button');
+            submitBtn.textContent = '发布中...';
+            submitBtn.disabled = true;
+            
+            try {
+                let imageUrl = '';
+                
+                // 如果有图片，上传到Firebase Storage
+                if (imageFile) {
+                    const storageRef = storage.ref(`item_images/${Date.now()}_${imageFile.name}`);
+                    const snapshot = await storageRef.put(imageFile);
+                    imageUrl = await snapshot.ref.getDownloadURL();
+                }
+                
+                // 添加数据到Firestore
+                await db.collection('items').add({
+                    gameName,
+                    itemName,
+                    sellerName,
+                    price,
+                    imageUrl,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // 显示通知
+                showNotification('交易信息发布成功！');
+                
+                // 重置表单
+                itemForm.reset();
+                imagePreview.style.display = 'none';
+            } catch (error) {
+                console.error("发布失败: ", error);
+                showNotification('发布失败，请重试', 'error');
+            } finally {
+                submitBtn.textContent = '发布交易信息';
+                submitBtn.disabled = false;
+            }
+        });
+        
+        // 显示通知
+        function showNotification(message, type = 'success') {
+            notification.textContent = message;
+            notification.className = 'notification show';
+            notification.style.background = type === 'error' ? 'var(--danger)' : 'var(--success)';
+            
+            setTimeout(() => {
+                notification.className = 'notification';
+            }, 3000);
         }
-      });
-    });
-
-    // Initialize both features
-    clickDoc.get(); // Initialize click counter
-    numberDoc.get(); // Initialize number displayn
-  </script>
+        
+        // 实时监听物品数据
+        db.collection('items').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
+            itemsContainer.innerHTML = '';
+            itemCount.textContent = snapshot.size;
+            
+            if (snapshot.empty) {
+                itemsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div>📦</div>
+                        <h3>暂无交易物品</h3>
+                        <p>发布第一个交易物品吧！</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            snapshot.forEach(doc => {
+                const item = doc.data();
+                const itemId = doc.id;
+                
+                const itemCard = document.createElement('div');
+                itemCard.className = 'item-card';
+                itemCard.innerHTML = `
+                    <div class="item-image">
+                        ${item.imageUrl ? 
+                            `<img src="${item.imageUrl}" alt="${item.itemName}">` : 
+                            `<div>🎮</div>`
+                        }
+                    </div>
+                    <div class="item-details">
+                        <div class="item-game">${item.gameName}</div>
+                        <h3 class="item-name">${item.itemName}</h3>
+                        <div class="item-price">¥${item.price.toFixed(2)}</div>
+                        <div class="item-seller">
+                            <div class="seller-avatar">${item.sellerName.charAt(0)}</div>
+                            <span>${item.sellerName}</span>
+                        </div>
+                    </div>
+                `;
+                
+                itemsContainer.appendChild(itemCard);
+            });
+        });
+        
+        // 搜索功能
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const items = document.querySelectorAll('.item-card');
+            
+            items.forEach(item => {
+                const name = item.querySelector('.item-name').textContent.toLowerCase();
+                const game = item.querySelector('.item-game').textContent.toLowerCase();
+                
+                if (name.includes(searchTerm) || game.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+        
+        // 模拟在线人数
+        setInterval(() => {
+            onlineCount.textContent = Math.floor(Math.random() * 50 + 20);
+        }, 5000);
+    </script>
 </body>
 </html>
