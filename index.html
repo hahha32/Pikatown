@@ -14,8 +14,6 @@
             --dark: #2d3436;
             --light: #f8f9fa;
             --success: #1dd1a1;
-            --danger: #ff6b6b;
-            --warning: #feca57;
         }
         
         * {
@@ -95,7 +93,6 @@
             padding: 20px;
             border-radius: 15px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-            backdrop-filter: blur(5px);
         }
         
         .form-section h2 {
@@ -161,7 +158,6 @@
             padding: 20px;
             border-radius: 15px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-            backdrop-filter: blur(5px);
         }
         
         .items-section h2 {
@@ -253,12 +249,6 @@
             padding: 30px 15px;
             color: #6c757d;
             grid-column: 1 / -1;
-        }
-        
-        .empty-state i {
-            font-size: 3.5rem;
-            margin-bottom: 15px;
-            color: #dee2e6;
         }
         
         .empty-state h3 {
@@ -510,7 +500,7 @@
                 imagePreview.style.display = 'none';
             } catch (error) {
                 console.error("发布失败: ", error);
-                showNotification('发布失败，请重试', 'error');
+                showNotification('发布失败: ' + error.message, 'error');
             } finally {
                 submitBtn.textContent = '发布交易信息';
                 submitBtn.disabled = false;
@@ -521,7 +511,7 @@
         function showNotification(message, type = 'success') {
             notification.textContent = message;
             notification.className = 'notification show';
-            notification.style.background = type === 'error' ? 'var(--danger)' : 'var(--success)';
+            notification.style.background = type === 'error' ? '#ff6b6b' : '#1dd1a1';
             
             setTimeout(() => {
                 notification.className = 'notification';
@@ -529,7 +519,7 @@
         }
         
         // 创建商品卡片
-        function createItemCard(item, id) {
+        function createItemCard(item) {
             const itemCard = document.createElement('div');
             itemCard.className = 'item-card';
             itemCard.innerHTML = `
@@ -573,11 +563,12 @@
             // 添加所有商品
             snapshot.forEach(doc => {
                 const item = doc.data();
-                const itemCard = createItemCard(item, doc.id);
+                const itemCard = createItemCard(item);
                 itemsContainer.appendChild(itemCard);
             });
         }, error => {
             console.error("监听失败: ", error);
+            showNotification('数据加载失败: ' + error.message, 'error');
             itemsContainer.innerHTML = `
                 <div class="empty-state">
                     <div>⚠️</div>
