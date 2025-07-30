@@ -530,28 +530,35 @@
         }
 
         // 创建商品卡片
-        function createItemCard(item) {
-            const itemCard = document.createElement('div');
-            itemCard.className = 'item-card';
-            itemCard.innerHTML = `
-                <div class="game-tag">皮卡堂</div>
-                <div class="item-image">
-                    ${item.imageUrl ? 
-                        `<img src="${item.imageUrl}" alt="${item.itemName}">` : 
-                        `<div>🎮</div>`
-                    }
-                </div>
-                <div class="item-details">
-                    <h3 class="item-name">${item.itemName}</h3>
-                    <div class="item-price">¥${item.price.toFixed(2)}</div>
-                    <div class="item-seller">
-                        <div class="seller-avatar">${item.sellerName.charAt(0)}</div>
-                        <span>${item.sellerName}</span>
-                    </div>
-                </div>
-            `;
-            return itemCard;
-        }
+// 创建商品卡片
+function createItemCard(item) {
+    const itemCard = document.createElement('div');
+    itemCard.className = 'item-card';
+    
+    // Ensure item.price is a number, if it's not, convert it to a number
+    const price = parseFloat(item.price);
+    const formattedPrice = !isNaN(price) ? price.toFixed(2) : 'N/A'; // Fallback to 'N/A' if price is invalid
+
+    itemCard.innerHTML = `
+        <div class="game-tag">皮卡堂</div>
+        <div class="item-image">
+            ${item.imageUrl ? 
+                `<img src="${item.imageUrl}" alt="${item.itemName}">` : 
+                `<div>🎮</div>`
+            }
+        </div>
+        <div class="item-details">
+            <h3 class="item-name">${item.itemName}</h3>
+            <div class="item-price">¥${formattedPrice}</div>
+            <div class="item-seller">
+                <div class="seller-avatar">${item.sellerName.charAt(0)}</div>
+                <span>${item.sellerName}</span>
+            </div>
+        </div>
+    `;
+    return itemCard;
+}
+
 
         // 实时监听物品数据
         db.collection('items')
