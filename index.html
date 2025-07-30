@@ -358,9 +358,9 @@
                 </div>
             </div>
         </header>
-        
+
         <div class="main-content">
-            <section class="form-section">
+                        <section class="form-section">
                 <h2>发布道具</h2>
                 <form id="itemForm">
                     <div class="form-group">
@@ -419,8 +419,17 @@
             <p>响妹设计 &copy; 2023 | 诚信交易，快乐游戏</p>
             <p>本平台依靠玩家自觉，交易时请注意安全</p>
         </footer>
+        </div>
+
+        <div class="notification" id="notification">
+            道具信息发布成功！
+        </div>
+
+        <footer>
+            <p>响妹设计 &copy; 2023 | 诚信交易，快乐游戏</p>
+        </footer>
     </div>
-    
+
     <script>
         // Firebase配置
         const firebaseConfig = {
@@ -431,12 +440,12 @@
             messagingSenderId: "381043931469",
             appId: "1:381043931469:web:7193c29723c600701edf04"
         };
-        
+
         // 初始化Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const storage = firebase.storage();
-        
+
         // 获取DOM元素
         const itemForm = document.getElementById('itemForm');
         const itemsContainer = document.getElementById('itemsContainer');
@@ -444,44 +453,46 @@
         const imagePreview = document.getElementById('imagePreview');
         const itemImage = document.getElementById('itemImage');
         const searchInput = document.getElementById('searchInput');
-        
+
         // 图片预览
         itemImage.addEventListener('change', function(e) {
             const file = e.target.files[0];
-            if (file) {
+            if (file && (file.type === 'image/png' || file.type === 'image/jpeg')) {
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     imagePreview.src = event.target.result;
                     imagePreview.style.display = 'block';
-                }
+                };
                 reader.readAsDataURL(file);
+            } else {
+                showNotification('只支持上传PNG和JPG格式的图片', 'error');
             }
         });
-        
+
         // 提交表单
         itemForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+
             const itemName = document.getElementById('itemName').value;
             const sellerName = document.getElementById('sellerName').value;
             const price = parseFloat(document.getElementById('price').value);
             const imageFile = itemImage.files[0];
-            
+
             // 显示加载状态
             const submitBtn = itemForm.querySelector('button');
             submitBtn.textContent = '发布中...';
             submitBtn.disabled = true;
-            
+
             try {
                 let imageUrl = '';
-                
+
                 // 如果有图片，上传到Firebase Storage
                 if (imageFile) {
                     const storageRef = storage.ref(`item_images/${Date.now()}_${imageFile.name}`);
                     const snapshot = await storageRef.put(imageFile);
                     imageUrl = await snapshot.ref.getDownloadURL();
                 }
-                
+
                 // 添加数据到Firestore
                 await db.collection('items').add({
                     gameName: "皮卡堂", // 固定为皮卡堂
@@ -491,10 +502,10 @@
                     imageUrl,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                
+
                 // 显示通知
                 showNotification('道具信息发布成功！');
-                
+
                 // 重置表单
                 itemForm.reset();
                 imagePreview.style.display = 'none';
@@ -506,18 +517,18 @@
                 submitBtn.disabled = false;
             }
         });
-        
+
         // 显示通知
         function showNotification(message, type = 'success') {
             notification.textContent = message;
             notification.className = 'notification show';
             notification.style.background = type === 'error' ? '#ff6b6b' : '#1dd1a1';
-            
+
             setTimeout(() => {
                 notification.className = 'notification';
             }, 3000);
         }
-        
+
         // 创建商品卡片
         function createItemCard(item) {
             const itemCard = document.createElement('div');
@@ -541,14 +552,14 @@
             `;
             return itemCard;
         }
-        
-        // 实时监听物品数据 - 修复版本
+
+        // 实时监听物品数据
         db.collection('items')
           .orderBy('timestamp', 'desc')
           .onSnapshot(snapshot => {
             // 清空容器
             itemsContainer.innerHTML = '';
-            
+
             if (snapshot.empty) {
                 itemsContainer.innerHTML = `
                     <div class="empty-state">
@@ -559,7 +570,7 @@
                 `;
                 return;
             }
-            
+
             // 添加所有商品
             snapshot.forEach(doc => {
                 const item = doc.data();
@@ -577,16 +588,16 @@
                 </div>
             `;
         });
-        
+
         // 搜索功能
         searchInput.addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
             const items = document.querySelectorAll('.item-card');
             let visibleCount = 0;
-            
+
             items.forEach(item => {
                 const name = item.querySelector('.item-name').textContent.toLowerCase();
-                
+
                 if (name.includes(searchTerm)) {
                     item.style.display = 'block';
                     visibleCount++;
@@ -594,22 +605,13 @@
                     item.style.display = 'none';
                 }
             });
-            
-            // 如果没有匹配项，显示空状态
-            if (visibleCount === 0 && items.length > 0) {
+
+            if (visibleCount === 0) {
                 itemsContainer.innerHTML = `
                     <div class="empty-state">
                         <div>🔍</div>
                         <h3>未找到匹配物品</h3>
                         <p>请尝试其他搜索词</p>
-                    </div>
-                `;
-            } else if (visibleCount === 0) {
-                itemsContainer.innerHTML = `
-                    <div class="empty-state">
-                        <div>📦</div>
-                        <h3>暂无交易物品</h3>
-                        <p>发布第一个交易物品吧！</p>
                     </div>
                 `;
             }
