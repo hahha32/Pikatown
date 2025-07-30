@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -8,6 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-storage-compat.js"></script>
     <style>
+        /* Add your existing styles here */
         :root {
             --primary: #ff6b6b;
             --secondary: #ffb142;
@@ -360,7 +362,7 @@
         </header>
 
         <div class="main-content">
-                        <section class="form-section">
+            <section class="form-section">
                 <h2>发布道具</h2>
                 <form id="itemForm">
                     <div class="form-group">
@@ -410,23 +412,14 @@
                 </div>
             </section>
         </div>
-        
+
         <div class="notification" id="notification">
             道具信息发布成功！
         </div>
-        
+
         <footer>
             <p>响妹设计 &copy; 2023 | 诚信交易，快乐游戏</p>
             <p>本平台依靠玩家自觉，交易时请注意安全</p>
-        </footer>
-        </div>
-
-        <div class="notification" id="notification">
-            道具信息发布成功！
-        </div>
-
-        <footer>
-            <p>响妹设计 &copy; 2023 | 诚信交易，快乐游戏</p>
         </footer>
     </div>
 
@@ -488,9 +481,7 @@
 
                 // 如果有图片，上传到Firebase Storage
                 if (imageFile) {
-                    const storageRef = storage.ref(`item_images/${Date.now()}_${imageFile.name}`);
-                    const snapshot = await storageRef.put(imageFile);
-                    imageUrl = await snapshot.ref.getDownloadURL();
+                    imageUrl = await uploadImage(imageFile);
                 }
 
                 // 添加数据到Firestore
@@ -518,6 +509,19 @@
             }
         });
 
+        // 上传图片
+        async function uploadImage(file) {
+            const storageRef = storage.ref(`item_images/${Date.now()}_${file.name}`);
+            try {
+                const snapshot = await storageRef.put(file); // 上传图片
+                return await snapshot.ref.getDownloadURL(); // 获取图片URL
+            } catch (error) {
+                console.error("图片上传失败:", error);
+                showNotification('图片上传失败: ' + error.message, 'error');
+                return '';
+            }
+        }
+
         // 显示通知
         function showNotification(message, type = 'success') {
             notification.textContent = message;
@@ -530,35 +534,28 @@
         }
 
         // 创建商品卡片
-// 创建商品卡片
-function createItemCard(item) {
-    const itemCard = document.createElement('div');
-    itemCard.className = 'item-card';
-    
-    // Ensure item.price is a number, if it's not, convert it to a number
-    const price = parseFloat(item.price);
-    const formattedPrice = !isNaN(price) ? price.toFixed(2) : 'N/A'; // Fallback to 'N/A' if price is invalid
-
-    itemCard.innerHTML = `
-        <div class="game-tag">皮卡堂</div>
-        <div class="item-image">
-            ${item.imageUrl ? 
-                `<img src="${item.imageUrl}" alt="${item.itemName}">` : 
-                `<div>🎮</div>`
-            }
-        </div>
-        <div class="item-details">
-            <h3 class="item-name">${item.itemName}</h3>
-            <div class="item-price">¥${formattedPrice}</div>
-            <div class="item-seller">
-                <div class="seller-avatar">${item.sellerName.charAt(0)}</div>
-                <span>${item.sellerName}</span>
-            </div>
-        </div>
-    `;
-    return itemCard;
-}
-
+        function createItemCard(item) {
+            const itemCard = document.createElement('div');
+            itemCard.className = 'item-card';
+            itemCard.innerHTML = `
+                <div class="game-tag">皮卡堂</div>
+                <div class="item-image">
+                    ${item.imageUrl ? 
+                        `<img src="${item.imageUrl}" alt="${item.itemName}">` : 
+                        `<div>🎮</div>`
+                    }
+                </div>
+                <div class="item-details">
+                    <h3 class="item-name">${item.itemName}</h3>
+                    <div class="item-price">¥${item.price.toFixed(2)}</div>
+                    <div class="item-seller">
+                        <div class="seller-avatar">${item.sellerName.charAt(0)}</div>
+                        <span>${item.sellerName}</span>
+                    </div>
+                </div>
+            `;
+            return itemCard;
+        }
 
         // 实时监听物品数据
         db.collection('items')
